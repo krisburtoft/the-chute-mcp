@@ -1,7 +1,7 @@
 {
-  "name": "the-chute-mcp-client",
+  "name": "the-chute-mcp",
   "version": "0.1.0",
-  "description": "A small TypeScript client for discovering and calling The Chute MCP tools.",
+  "description": "Open-source MCP server contracts, server adapter, and client for The Chute.",
   "type": "module",
   "license": "MIT",
   "repository": "https://github.com/krisburtoft/the-chute-mcp",
@@ -11,6 +11,18 @@
     ".": {
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js"
+    },
+    "./server": {
+      "types": "./dist/server.d.ts",
+      "import": "./dist/server.js"
+    },
+    "./tools": {
+      "types": "./dist/tool-catalog.d.ts",
+      "import": "./dist/tool-catalog.js"
+    },
+    "./schemas": {
+      "types": "./dist/schemas.d.ts",
+      "import": "./dist/schemas.js"
     }
   },
   "scripts": {
@@ -20,7 +32,9 @@
     "example": "tsx examples/discover-tools.ts"
   },
   "dependencies": {
-    "@modelcontextprotocol/client": "^2.1.0"
+    "@modelcontextprotocol/client": "^2.1.0",
+    "@modelcontextprotocol/server": "^2.1.0",
+    "zod": "^4.6.5"
   },
   "devDependencies": {
     "@types/node": "^22.10.5",
