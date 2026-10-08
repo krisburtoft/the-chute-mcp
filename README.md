@@ -1,8 +1,8 @@
-# The Chute MCP client
+# The Chute MCP integration
 
-An open source TypeScript helper for connecting to [The Chute](https://www.thechute.app)'s hosted Model Context Protocol (MCP) endpoint.
+Open source TypeScript code for The Chute's hosted Model Context Protocol (MCP) service.
 
-This repository contains client-side integration code and examples. The hosted app, authorization service, database, and server implementation remain separate.
+This repository contains the client helper and the server's reusable MCP protocol layer. The private application supplies ranch-specific tool handlers and data access. The frontend, authorization implementation, business rules, and database remain in the private application.
 
 ## Install
 
@@ -21,16 +21,18 @@ npm install github:krisburtoft/the-chute-mcp
 For production, the caller must obtain a user access token through The Chute's OAuth flow. Never use a service-role key or another shared secret in a client application. Without a token, the helper can discover the public tool catalog, but data and tool calls remain protected.
 
 ```ts
-import { connectToTheChute } from 'the-chute-mcp-client';
+import { connectToTheChute } from "the-chute-mcp-client";
 
 const client = await connectToTheChute({ accessToken });
 try {
   const { tools } = await client.listTools();
-  console.log(tools.map(({ name, description, inputSchema }) => ({
-    name,
-    description,
-    inputSchema,
-  })));
+  console.log(
+    tools.map(({ name, description, inputSchema }) => ({
+      name,
+      description,
+      inputSchema,
+    })),
+  );
 } finally {
   await client.close();
 }
@@ -54,7 +56,25 @@ This lists tools without a token. Set `CHUTE_ACCESS_TOKEN` as well to test an au
 - Write tools may prepare drafts; changes requiring confirmation must follow the server's confirmation flow.
 - Tool availability and schemas can change. Discover tools at connection time and handle tool errors.
 
-For an end-to-end discovery example, see [`examples/discover-tools.ts`](examples/discover-tools.ts). For protocol and OAuth background, see the [MCP specification](https://modelcontextprotocol.io/) and [official TypeScript client SDK](https://github.com/modelcontextprotocol/typescript-sdk).
+## Server integration
+
+The private host application uses `installOAuthToolSecurity` from `the-chute-mcp-client/server` to apply the MCP OAuth challenge and tool security metadata consistently. Call it before registering tools, then call the returned finalizer after registration:
+
+```ts
+import { installOAuthToolSecurity } from "the-chute-mcp-client/server";
+
+const finalizeSecurity = installOAuthToolSecurity(server.server, {
+  authenticated: true,
+  resourceMetadataUrl:
+    "https://www.thechute.app/.well-known/oauth-protected-resource/api/mcp",
+});
+// Register the host application's tool handlers here.
+finalizeSecurity();
+```
+
+This protocol adapter does not connect to the database or implement ranch operations. Tool execution remains behind the host application's authenticated, tenant-scoped data layer.
+
+For an end-to-end discovery example, see [`examples/discover-tools.ts`](examples/discover-tools.ts). For protocol and OAuth background, see the [MCP specification](https://modelcontextprotocol.io/) and [official TypeScript SDK](https://github.com/modelcontextprotocol/typescript-sdk).
 
 Run `npm run example` from a local checkout to print the live tool names and descriptions. Add `-- --schemas` to print input schemas too.
 
