@@ -1,5 +1,5 @@
 {
-  "name": "the-chute-mcp-client",
+  "name": "the-chute-mcp",
   "version": "0.1.0",
   "description": "Open-source MCP server contracts, server adapter, and client for The Chute.",
   "type": "module",

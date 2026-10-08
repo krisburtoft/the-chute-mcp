@@ -1,4 +1,4 @@
-import { connectToTheChute } from 'the-chute-mcp-client';
+import { connectToTheChute } from "the-chute-mcp";
 
 const accessToken = process.env.CHUTE_ACCESS_TOKEN;
 const endpoint = process.env.CHUTE_MCP_ENDPOINT;
@@ -9,9 +9,9 @@ const client = await connectToTheChute({
 });
 try {
   const { tools } = await client.listTools();
-  const includeSchemas = process.argv.includes('--schemas');
+  const includeSchemas = process.argv.includes("--schemas");
   for (const tool of tools) {
-    console.log(`${tool.name}: ${tool.description ?? '(no description)'}`);
+    console.log(`${tool.name}: ${tool.description ?? "(no description)"}`);
     if (includeSchemas) console.log(JSON.stringify(tool.inputSchema, null, 2));
   }
 } finally {

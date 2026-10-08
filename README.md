@@ -10,7 +10,7 @@ The server publishes 31 ranch tools covering herd search and records, groups, ca
 
 ## Server adapter
 
-The application creates the MCP server through `createTheChuteMcpServer` and supplies one executor for each catalog tool. This keeps the public names, descriptions, input validation, annotations, registration, and OAuth behavior in this repo, while the executor implementations remain in the private application.
+The application creates the MCP server through `createTheChuteMcpServer` and supplies one executor for each catalog tool. It passes each request through `handleTheChuteMcpRequest` for the Streamable HTTP transport. This keeps the public names, descriptions, input validation, annotations, registration, transport, and OAuth behavior in this repo, while the executor implementations remain in the private application.
 
 The server adapter registers the public catalog and adds OAuth security metadata to `tools/list`. Unauthenticated tool calls receive an MCP OAuth challenge. A host must authenticate each request and construct callbacks scoped to that user and ranch before creating an authenticated server.
 
@@ -19,7 +19,7 @@ The server adapter registers the public catalog and adds OAuth security metadata
 The package also exports `connectToTheChute` for TypeScript clients. It connects to the hosted endpoint or a local loopback endpoint and discovers the server's live tool list:
 
 ```ts
-import { connectToTheChute } from "the-chute-mcp-client";
+import { connectToTheChute } from "the-chute-mcp";
 
 const client = await connectToTheChute({ accessToken });
 try {

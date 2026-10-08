@@ -1,4 +1,4 @@
-import { McpServer } from "@modelcontextprotocol/server";
+import { createMcpHandler, McpServer } from "@modelcontextprotocol/server";
 import { z } from "zod";
 import { THE_CHUTE_MCP_TOOL_DEFINITIONS } from "./tool-catalog.js";
 
@@ -26,6 +26,12 @@ export type TheChuteMcpServerOptions = {
   resourceMetadataUrl: string;
   /** Private host callbacks that execute ranch operations after auth checks. */
   handlers: TheChuteMcpToolHandlers;
+};
+
+export type TheChuteMcpRequestOptions = {
+  request: Request;
+  createServer: () => McpServer | Promise<McpServer>;
+  onError?: (error: unknown) => void;
 };
 
 /**
@@ -58,6 +64,18 @@ export function createTheChuteMcpServer({
 
   finalizeSecurity();
   return server;
+}
+
+/** Serve one Streamable HTTP request using the public MCP server adapter. */
+export function handleTheChuteMcpRequest({
+  request,
+  createServer,
+  onError,
+}: TheChuteMcpRequestOptions): Promise<Response> {
+  const handler = createMcpHandler(createServer, {
+    onerror: (error) => onError?.(error),
+  });
+  return handler.fetch(request);
 }
 
 /**
