@@ -1,3 +1,65 @@
+import { McpServer } from "@modelcontextprotocol/server";
+import { z } from "zod";
+import { THE_CHUTE_MCP_TOOL_DEFINITIONS } from "./tool-catalog.js";
+
+type ToolDefinitions = typeof THE_CHUTE_MCP_TOOL_DEFINITIONS;
+type ToolName = keyof ToolDefinitions;
+type ToolHandler<Definition> = Definition extends { inputSchema: infer Schema }
+  ? Schema extends z.ZodType
+    ? (input: z.output<Schema>) => Promise<unknown>
+    : () => Promise<unknown>
+  : () => Promise<unknown>;
+
+/** One host-side executor for every published tool. */
+export type TheChuteMcpToolHandlers = {
+  [Name in ToolName]: ToolHandler<ToolDefinitions[Name]>;
+};
+
+export type TheChuteMcpServerOptions = {
+  /** MCP server name advertised to clients. */
+  name?: string;
+  /** MCP server version advertised to clients. */
+  version?: string;
+  /** Whether this request has an authorized, ranch-scoped host context. */
+  authenticated: boolean;
+  /** OAuth protected-resource metadata URL for the current server endpoint. */
+  resourceMetadataUrl: string;
+  /** Private host callbacks that execute ranch operations after auth checks. */
+  handlers: TheChuteMcpToolHandlers;
+};
+
+/**
+ * Creates the MCP server and registers the public tool catalog with host-provided
+ * execution callbacks. Tool contracts and protocol handling are public; the
+ * authenticated data adapter remains in the host application.
+ */
+export function createTheChuteMcpServer({
+  name = "the-chute",
+  version = "0.1.0",
+  authenticated,
+  resourceMetadataUrl,
+  handlers,
+}: TheChuteMcpServerOptions): McpServer {
+  const server = new McpServer({ name, version });
+  const finalizeSecurity = installOAuthToolSecurity(
+    server.server as unknown as McpProtocolServer,
+    { authenticated, resourceMetadataUrl },
+  );
+
+  for (const [name, definition] of Object.entries(
+    THE_CHUTE_MCP_TOOL_DEFINITIONS,
+  )) {
+    server.registerTool(
+      name,
+      definition as never,
+      handlers[name as ToolName] as never,
+    );
+  }
+
+  finalizeSecurity();
+  return server;
+}
+
 /**
  * Applies The Chute's MCP OAuth behavior to an MCP SDK protocol server.
  *
