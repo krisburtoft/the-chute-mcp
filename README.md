@@ -18,7 +18,7 @@ npm install github:krisburtoft/the-chute-mcp
 
 ## Connect and discover tools
 
-The caller must obtain a user access token through The Chute's OAuth flow. Never use a service-role key or another shared secret in a client application.
+For production, the caller must obtain a user access token through The Chute's OAuth flow. Never use a service-role key or another shared secret in a client application. Without a token, the helper can discover the public tool catalog, but data and tool calls remain protected.
 
 ```ts
 import { connectToTheChute } from 'the-chute-mcp-client';
@@ -38,6 +38,14 @@ try {
 
 The client discovers the live tool catalog with MCP `tools/list`, so the server's current input schemas remain the source of truth. To call a tool, pass its discovered name and arguments to `client.callTool({ name, arguments })`. The signed-in user's role, ranch membership, and enabled assistant access still govern the request.
 
+For local development, the helper also accepts an `http://localhost`, `http://127.0.0.1`, or `http://[::1]` endpoint at `/api/mcp`. It rejects other custom hosts so a user token cannot be accidentally sent to an arbitrary server. Start the app locally, then run:
+
+```sh
+CHUTE_MCP_ENDPOINT=http://127.0.0.1:3000/api/mcp npm run example
+```
+
+This lists tools without a token. Set `CHUTE_ACCESS_TOKEN` as well to test an authenticated local account.
+
 ## Authentication and access
 
 - Use OAuth authorization code flow with PKCE and the redirect URL registered by your MCP host.
@@ -48,7 +56,7 @@ The client discovers the live tool catalog with MCP `tools/list`, so the server'
 
 For an end-to-end discovery example, see [`examples/discover-tools.ts`](examples/discover-tools.ts). For protocol and OAuth background, see the [MCP specification](https://modelcontextprotocol.io/) and [official TypeScript client SDK](https://github.com/modelcontextprotocol/typescript-sdk).
 
-With `CHUTE_ACCESS_TOKEN` set in your shell, run `npm run example` from a local checkout to print the live tool catalog.
+Run `npm run example` from a local checkout to print the live tool names and descriptions. Add `-- --schemas` to print input schemas too.
 
 ## License
 
