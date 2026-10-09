@@ -128,7 +128,7 @@ export const breedingRecordCommonShape = {
   notes: optionalText(3000),
 };
 
-export const breedingRecordSchema = z.discriminatedUnion("method", [
+const legacyBreedingRecordSchema = z.discriminatedUnion("method", [
   z
     .object({
       ...breedingRecordCommonShape,
@@ -150,6 +150,40 @@ export const breedingRecordSchema = z.discriminatedUnion("method", [
       message: "Exposure end date must be on or after the start date.",
       path: ["exposureEndDate"],
     }),
+]);
+
+export const breedingServiceSchema = z.discriminatedUnion("method", [
+  z
+    .object({
+      id: z.string().uuid().optional(),
+      method: z.literal("ai"),
+      breedingDate: dateSchema,
+      sire: breedingSireSchema.optional(),
+    })
+    .strict(),
+  z
+    .object({
+      id: z.string().uuid().optional(),
+      method: z.literal("bull_exposure"),
+      exposureStartDate: dateSchema,
+      exposureEndDate: dateSchema,
+      sire: breedingSireSchema,
+    })
+    .strict()
+    .refine((value) => value.exposureStartDate <= value.exposureEndDate, {
+      message: "Exposure end date must be on or after the start date.",
+      path: ["exposureEndDate"],
+    }),
+]);
+
+export const breedingRecordSchema = z.union([
+  legacyBreedingRecordSchema,
+  z
+    .object({
+      ...breedingRecordCommonShape,
+      services: z.array(breedingServiceSchema).min(1).max(20),
+    })
+    .strict(),
 ]);
 
 export const expenseRecordSchema = z.object({

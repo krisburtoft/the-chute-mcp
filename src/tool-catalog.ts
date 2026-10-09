@@ -370,7 +370,7 @@ export const THE_CHUTE_MCP_TOOL_DEFINITIONS = {
   draft_breeding_record: {
     title: "Draft a cattle breeding record",
     description:
-      "Bull-exposure records require a sire. Before drafting, search_livestock and search_external_animals for the sire. Select the exact ranch bull or external profile. If neither search finds the bull, use sire.kind=create_external_animal to draft creation of a real external sire profile with the breeding record. The profile is rechecked for duplicates, shown in the preview, and created and linked only after confirmation. Never put the bull name in notes or use a free-text sire field. Breeding dates and calving windows use the same calculations as the web interface.",
+      "Draft one breeding cycle with one or more service events. Use services when recording both AI and cleanup bull exposure, or multiple AI services; each service has its own dates and sire. For bull exposure, a sire is required. Before drafting, search_livestock and search_external_animals for each sire. Select the exact ranch bull or external profile. If no profile matches, use sire.kind=create_external_animal to draft creation of an external sire profile with the cycle. Profiles are rechecked for duplicates, shown in the preview, and created and linked only after confirmation. Never put a bull name in notes or use a free-text sire field. Legacy single-method inputs remain supported. Breeding dates and calving windows use the same calculations as the web interface.",
     inputSchema: breedingRecordSchema,
     annotations: draftToolAnnotations,
   },
@@ -427,7 +427,7 @@ export const THE_CHUTE_MCP_TOOL_DEFINITIONS = {
   draft_breeding_record_change: {
     title: "Draft a breeding record change",
     description:
-      "Draft editing or permanently deleting an existing cattle breeding record. Updates recalculate expected and normal calving windows. Nothing changes until the owner confirms the exact draft with confirm_ranch_change.",
+      "Draft editing or permanently deleting an existing cattle breeding cycle. For updates, provide the full replacement cycle and its complete services array; use service IDs from list_breeding_records to preserve existing service identity. A cycle may include repeat AI services and cleanup bull exposure. Updates recalculate expected and normal calving windows. Nothing changes until the owner confirms the exact draft with confirm_ranch_change.",
     inputSchema: z.discriminatedUnion("operation", [
       z.object({
         operation: z.literal("update"),
