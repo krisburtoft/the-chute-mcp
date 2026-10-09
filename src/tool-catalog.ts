@@ -14,6 +14,7 @@ import {
   photoUploadInputSchema,
   reminderRecordSchema,
   reminderRecurrenceSchema,
+  weightRecordSchema,
 } from "./schemas.js";
 
 const mcpPageSchema = {
@@ -153,6 +154,19 @@ export const THE_CHUTE_MCP_TOOL_DEFINITIONS = {
     annotations: readToolAnnotations,
   },
 
+  list_weight_records: {
+    title: "List weight records",
+    description:
+      "Search saved animal weight records by animal or date range. Results include each recorded value, original unit, optional context, and are paginated (25 by default, up to 100).",
+    inputSchema: z.object({
+      animalId: z.string().uuid().optional(),
+      from: z.iso.date().optional(),
+      through: z.iso.date().optional(),
+      ...mcpPageSchema,
+    }),
+    annotations: readToolAnnotations,
+  },
+
   list_breeding_records: {
     title: "List breeding records",
     description:
@@ -285,6 +299,14 @@ export const THE_CHUTE_MCP_TOOL_DEFINITIONS = {
     description:
       "Draft a health event for an active ranch animal. Health records can be added through the web interface; they are never written until the owner confirms the exact draft with confirm_ranch_change.",
     inputSchema: healthRecordSchema,
+    annotations: draftToolAnnotations,
+  },
+
+  draft_weight_record: {
+    title: "Draft a weight record",
+    description:
+      "Prepare a dated weight record for one ranch animal, including its value, original unit, and optional context such as birth, weaning, processing, or sale. Nothing is saved until an authorized ranch member reviews the exact details and confirms with confirm_ranch_change.",
+    inputSchema: weightRecordSchema,
     annotations: draftToolAnnotations,
   },
 
@@ -470,7 +492,7 @@ export const THE_CHUTE_MCP_TOOL_DEFINITIONS = {
   confirm_ranch_change: {
     title: "Confirm a ranch change",
     description:
-      "Apply a pending animal, health, breeding, expense, or reminder draft. Call only after the ranch owner explicitly approves the exact action and values shown by the draft tool.",
+      "Apply a pending animal, health, breeding, weight, expense, or reminder draft. Call only after the ranch owner explicitly approves the exact action and values shown by the draft tool.",
     inputSchema: z.object({ draftId: z.string().uuid() }),
     annotations: confirmChangeAnnotations,
   },

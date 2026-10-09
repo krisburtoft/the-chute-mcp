@@ -6,7 +6,7 @@ The private web application supplies the authenticated executor for each tool. I
 
 ## MCP tool catalog
 
-The server publishes 31 ranch tools covering herd search and records, groups, care, health, breeding, expenses, reminders, animal photos, and owner-confirmed changes. The source of truth for names, descriptions, annotations, and Zod input schemas is [`src/tool-catalog.ts`](src/tool-catalog.ts), with shared input contracts in [`src/schemas.ts`](src/schemas.ts).
+The server publishes 33 ranch tools covering herd search and records, groups, care, health, breeding, weights, expenses, reminders, animal photos, and owner-confirmed changes. The source of truth for names, descriptions, annotations, and Zod input schemas is [`src/tool-catalog.ts`](src/tool-catalog.ts), with shared input contracts in [`src/schemas.ts`](src/schemas.ts).
 
 ## Server adapter
 

@@ -89,6 +89,16 @@ export const healthRecordSchema = z
     },
   );
 
+export const weightRecordSchema = z
+  .object({
+    animalId: z.string().uuid(),
+    measuredOn: dateSchema,
+    weight: z.number().positive().max(10000),
+    unit: z.enum(["lb", "kg"]),
+    context: optionalText(160),
+  })
+  .strict();
+
 export const breedingSireSchema = z.discriminatedUnion("kind", [
   z
     .object({ kind: z.literal("herd_animal"), animalId: z.string().uuid() })
