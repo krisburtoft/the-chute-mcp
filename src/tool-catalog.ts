@@ -442,6 +442,34 @@ export const THE_CHUTE_MCP_TOOL_DEFINITIONS = {
     annotations: draftToolAnnotations,
   },
 
+  draft_delivery_outcome: {
+    title: "Draft a calving delivery outcome",
+    description:
+      "Draft recording or correcting a delivery outcome for one breeding record: live birth, stillbirth, pregnancy loss, or unknown. A delivery date is required except for an unknown outcome. The outcome and date can affect the breeding record's actual calving date and pregnancy status; explain those effects in the preview and call confirm_ranch_change only after the ranch owner explicitly approves them.",
+    inputSchema: z
+      .object({
+        breedingRecordId: z.string().uuid(),
+        outcome: z.enum([
+          "live_birth",
+          "stillbirth",
+          "pregnancy_loss",
+          "unknown",
+        ]),
+        deliveryDate: dateSchema.nullable().optional(),
+        notes: optionalText(3000),
+      })
+      .strict()
+      .refine(
+        (value) =>
+          value.outcome === "unknown" || Boolean(value.deliveryDate),
+        {
+          message: "A delivery date is required for this outcome.",
+          path: ["deliveryDate"],
+        },
+      ),
+    annotations: draftToolAnnotations,
+  },
+
   draft_expense_change: {
     title: "Draft an expense change",
     description:
@@ -492,7 +520,7 @@ export const THE_CHUTE_MCP_TOOL_DEFINITIONS = {
   confirm_ranch_change: {
     title: "Confirm a ranch change",
     description:
-      "Apply a pending animal, health, breeding, weight, expense, or reminder draft. Call only after the ranch owner explicitly approves the exact action and values shown by the draft tool.",
+      "Apply a pending animal, health, breeding, delivery outcome, weight, expense, or reminder draft. Call only after the ranch owner explicitly approves the exact action and values shown by the draft tool.",
     inputSchema: z.object({ draftId: z.string().uuid() }),
     annotations: confirmChangeAnnotations,
   },
