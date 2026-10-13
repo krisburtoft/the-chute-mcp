@@ -10,6 +10,8 @@ import {
   expenseRecordSchema,
   healthRecordSchema,
   mcpPhotoFileSchema,
+  medicationInventoryCreateSchema,
+  medicationInventoryUpdateSchema,
   optionalText,
   photoUploadInputSchema,
   reminderRecordSchema,
@@ -191,6 +193,34 @@ export const THE_CHUTE_MCP_TOOL_DEFINITIONS = {
       ...mcpPageSchema,
     }),
     annotations: readToolAnnotations,
+  },
+
+  draft_medication_inventory_change: {
+    title: "Draft a medication inventory change",
+    description:
+      "Draft creating, updating, or deleting a medication inventory item. New stock is recorded as opening stock. Updates change item details and label intervals while preserving quantity; use the ranch inventory screen for audited stock adjustments. Deletion is allowed only when the item has no linked health records or stock movement history. Nothing changes until the ranch owner approves the exact preview and calls confirm_ranch_change.",
+    inputSchema: z.discriminatedUnion("operation", [
+      z
+        .object({
+          operation: z.literal("create"),
+          record: medicationInventoryCreateSchema,
+        })
+        .strict(),
+      z
+        .object({
+          operation: z.literal("update"),
+          medicationId: z.string().uuid(),
+          record: medicationInventoryUpdateSchema,
+        })
+        .strict(),
+      z
+        .object({
+          operation: z.literal("delete"),
+          medicationId: z.string().uuid(),
+        })
+        .strict(),
+    ]),
+    annotations: draftToolAnnotations,
   },
 
   draft_ranch_reminder: {
