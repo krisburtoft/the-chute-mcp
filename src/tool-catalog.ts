@@ -10,6 +10,8 @@ import {
   expenseRecordSchema,
   healthRecordSchema,
   mcpPhotoFileSchema,
+  medicationInventoryCreateSchema,
+  medicationInventoryUpdateSchema,
   optionalText,
   photoUploadInputSchema,
   reminderRecordSchema,
@@ -191,6 +193,51 @@ export const THE_CHUTE_MCP_TOOL_DEFINITIONS = {
       ...mcpPageSchema,
     }),
     annotations: readToolAnnotations,
+  },
+
+  draft_medication_inventory_change: {
+    title: "Draft a medication inventory change",
+    description:
+      "Draft creating, updating, or deleting a medication inventory item, or recording an audited stock adjustment. New stock is recorded as opening stock. Updates change item details and label intervals while preserving quantity; use adjust_stock for quantity changes. Deletion is allowed only when the item has no linked health records or stock movement history. Nothing changes until the ranch owner approves the exact preview and calls confirm_ranch_change.",
+    inputSchema: z.discriminatedUnion("operation", [
+      z
+        .object({
+          operation: z.literal("create"),
+          record: medicationInventoryCreateSchema,
+        })
+        .strict(),
+      z
+        .object({
+          operation: z.literal("update"),
+          medicationId: z.string().uuid(),
+          record: medicationInventoryUpdateSchema,
+        })
+        .strict(),
+      z
+        .object({
+          operation: z.literal("adjust_stock"),
+          medicationId: z.string().uuid(),
+          quantityChange: z
+            .number()
+            .refine(
+              (value) =>
+                value !== 0 &&
+                Math.abs(value) < 1_000_000_000 &&
+                Math.round(value * 1000) === value * 1000,
+              "Enter a non-zero stock change with no more than three decimal places.",
+            ),
+          effectiveOn: dateSchema,
+          reason: z.string().trim().min(1).max(300),
+        })
+        .strict(),
+      z
+        .object({
+          operation: z.literal("delete"),
+          medicationId: z.string().uuid(),
+        })
+        .strict(),
+    ]),
+    annotations: draftToolAnnotations,
   },
 
   draft_ranch_reminder: {
@@ -460,8 +507,7 @@ export const THE_CHUTE_MCP_TOOL_DEFINITIONS = {
       })
       .strict()
       .refine(
-        (value) =>
-          value.outcome === "unknown" || Boolean(value.deliveryDate),
+        (value) => value.outcome === "unknown" || Boolean(value.deliveryDate),
         {
           message: "A delivery date is required for this outcome.",
           path: ["deliveryDate"],

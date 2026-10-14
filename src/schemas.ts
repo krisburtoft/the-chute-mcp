@@ -236,3 +236,21 @@ export const photoUploadInputSchema = z.object({
   caption: z.string().trim().max(300).default(""),
   isPrimary: z.boolean().default(false),
 });
+
+export const medicationInventoryCreateSchema = z
+  .object({
+    name: z.string().trim().min(1).max(160),
+    manufacturer: optionalText(160),
+    lotNumber: optionalText(100),
+    quantityOnHand: z.number().min(0).max(1_000_000_000),
+    quantityUnit: z.string().trim().min(1).max(32),
+    reorderAt: z.number().min(0).max(1_000_000_000).default(0),
+    expiresOn: dateSchema.nullable().optional(),
+    meatWithdrawalDays: z.number().int().min(0).max(3650).nullable().optional(),
+    milkWithdrawalDays: z.number().int().min(0).max(3650).nullable().optional(),
+  })
+  .strict();
+
+export const medicationInventoryUpdateSchema = medicationInventoryCreateSchema
+  .omit({ quantityOnHand: true })
+  .strict();
